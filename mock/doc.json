@@ -1,0 +1,27 @@
+{
+    "id": "10",
+    "taskId": "http://linkedgov.org/data/dwp-electricity-use/1/issue/1",
+    "graphId": "http://linkedgov.org/data/dwp-electricity-use/1",
+    "dataset": {
+        "url": "http://linkedgov.org/data/dwp-electricity-use/",
+        "name": "DWP Electricity Use"
+    },
+    "taskType": "float-error",
+    "brokenValue": {
+        "value": "50, 37",
+        "type": "null",
+        "expectedType": "float"
+    },
+    "example": {
+        "type": "float",
+        "values": [
+            "120.00",
+            "110.05",
+            "99.50",
+            "101.30"
+        ]
+    },
+    "documentation": {
+        "typeReadable": "number"
+    }
+}
