@@ -4,14 +4,16 @@ $(document).ready(function() {
   next();
 
   $("li#nullify a").click(function() {
-    nullify();
+    var taskId = $("div.task").data("task-id");
+    var url = 'http://localhost:8180/task/' + taskId + '.js';
+    submitTask(url, {action : "null", method: "POST"});
   });
 
   $("li#edit a").click(function() {
     var value = $("div.value span").first().text();
-    var taskId = $("div#task").data("task-id");
+    var taskId = $("div.task").data("task-id");
 
-    var editForm = $('<form method="POST" action="/task/' + taskId + '" />');
+    var editForm = $('<form method="POST" action="http://localhost:8180/task/' + taskId + '.js" />');
     $('<input name="action" value="edit" type="hidden" />').appendTo(editForm);
     $('<input name="value" type="text" />').val(value).appendTo(editForm);
     $('<br />').appendTo(editForm);
@@ -19,7 +21,9 @@ $(document).ready(function() {
     submit.appendTo(editForm);
 
     editForm.submit(function(submit) {
-      thanks();
+      var url = $(submit.target).attr("action");
+      var editedValue = $(submit.target).find("input[name=value]").val();
+      submitTask(url, {action : "edit", value : editedValue, method: "POST"});
       return false;
     });
 
@@ -28,38 +32,30 @@ $(document).ready(function() {
   });
   
   $("li#okay a").click(function() {
-    $.get(
-      "http://localhost:8000/mock/okay.xml",
-      null,
-      function(resp) {
-        var response = $(resp);
-        errorCheckHandler(resp, markError, thanks);
-      },
-      "xml");
+    var taskId = $("div.task").data("task-id");
+    var url = 'http://localhost:8180/task/' + taskId + '.js';
+    submitTask(url, {action : "okay", method: "POST"});
   });
 
   $("li#refer a").click(function() {
-    $.get(
-      "http://localhost:8000/mock/refer.xml",
-      null,
-      function(resp) {
-        var response = $(resp);
-        errorCheckHandler(resp, markError, thanks);
-      },
-      "xml");
+    var taskId = $("div.task").data("task-id");
+    var url = 'http://localhost:8180/task/' + taskId + '.js';
+    submitTask(url, {action : "refer", method: "POST"});
   });
 });
 
-function nullify() {
-  $.get(
-    "http://localhost:8000/mock/nullified.xml",
-    null,
-    function(resp) {
-      var response = $(resp);
-      errorCheckHandler(resp, markError, thanks);
+function submitTask(url, data) {  
+  $.ajax({url: url,
+    data: data,
+    dataType: "jsonp",
+    type: "GET",
+    success: function(data) {
+      thanks();
     },
-    "xml"
-  );
+    error: function(data) {
+      markError();
+    }
+  });
 }
 
 function markError() {
@@ -85,42 +81,44 @@ function thanks() {
 }
 
 function next() {
-  loadJSONDoc("http://localhost:8000/mock/doc.json", "#task");
-}
-
-function errorCheck(resp) {
-  // check to see if it's been parsed into jQuery
-  if (!resp.find) {
-    var response = $(resp);
-  } else {
-    var response = resp;
-  }
-  var errorCheck = false;
-  // change to true if errors are more than zero
-  if (response.find("error").size() != 0) {
-    errorCheck = true;
-  }
-  return errorCheck;
+  loadJSONDoc("http://localhost:8180/task/random.js", "#task");
 }
 
 function loadJSONDoc(url, selector) {
-  $.getJSON(url, null, function(task) {
-    var out = $("<div class=\"task\" />");
-    out.data("task-id", task.id);
-    
-    var introtext = $("<p>We this the value below is a " + task.documentation.typeReadable + ", but we need confirmation.</p><p>Can you help? Could you make it to be the same format as the examples provided?</p>");
-    introtext.appendTo(out);
+  $.ajax({
+    url: url,
+    dataType: "jsonp",
+    success: function(task) {
+      var out = $("<div class=\"task\" />");
+      out.data("task-id", task.id);
+      
+      if (task.documentation) {
+        if (task.documentation.typeReadable) {
+          var introtext = $("<p>We this the value below is a " +
+              task.documentation.typeReadable +
+              ", but we need confirmation.</p><p>Can you help? Could you make it to be the same format as the examples provided?</p>");
+          introtext.appendTo(out);
+        }
+      } else {
+        var introtext = $("<p>We have data we are unsure about. Can you spot what is wrong with it and fix it to make it similar to the examples provided?</p>");
+        introtext.appendTo(out);
+      }
+      
+      if (task.brokenValue) {
+        var value = $('<div class="value"><span>' + task.brokenValue.value + '</span></div>');
+        value.appendTo(out);
+      }
 
-    var value = $('<div class="value"><span>' + task.brokenValue.value + '</span></div>');
-    value.appendTo(out);
-    
-    var examples = $('<ul class="example" />').data("type", task.example.type);
-    for (i = 0; i < task.example.values.length; i++) {
-      $("<li />").text(task.example.values[i]).appendTo(examples);
+      if (task.example) {
+        var examples = $('<ul class="example" />');
+        for (i = 0; i < task.example.length; i++) {
+          $("<li />").text(task.example[i]).appendTo(examples);
+        }
+        examples.appendTo(out);
+      }
+      out.fadeIn(400);
+      $("ul.options").fadeIn(400);
+      out.appendTo(selector);
     }
-    examples.appendTo(out);
-    out.fadeIn(400);
-    $("ul.options").fadeIn(400);
-    out.appendTo(selector);
   });
 }
