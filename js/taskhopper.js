@@ -42,6 +42,11 @@ $(document).ready(function() {
     var url = 'http://localhost:8180/task/' + taskId + '.js';
     submitTask(url, {action : "refer", method: "POST"});
   });
+  
+  $("li#skip a").click(function() {
+    $("#task").empty();
+    next();
+  });
 });
 
 function submitTask(url, data) {  
