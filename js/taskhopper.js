@@ -94,37 +94,43 @@ function loadJSONDoc(url, selector) {
     url: url,
     dataType: "jsonp",
     success: function(tasks) {
-      var task = tasks[0];
-      var out = $("<div class=\"task\" />");
-      out.data("task-id", task.id);
-      
-      if (task.documentation) {
-        if (task.documentation.typeReadable) {
-          var introtext = $("<p>We this the value below is a " +
-              task.documentation.typeReadable +
-              ", but we need confirmation.</p><p>Can you help? Could you make it to be the same format as the examples provided?</p>");
+      if (tasks.length == 0) {
+        $("ul.options").hide();
+        var out = $("<p>It looks like we haven't got any tasks left! All is now right with the world. Pat yourself on the back.</p>");
+        out.appendTo(selector);
+      } else {
+        var task = tasks[0];
+        var out = $("<div class=\"task\" />");
+        out.data("task-id", task.id);
+        
+        if (task.documentation) {
+          if (task.documentation.typeReadable) {
+            var introtext = $("<p>We this the value below is a " +
+                task.documentation.typeReadable +
+                ", but we need confirmation.</p><p>Can you help? Could you make it to be the same format as the examples provided?</p>");
+            introtext.appendTo(out);
+          }
+        } else {
+          var introtext = $("<p>We have data we are unsure about. Can you spot what is wrong with it and fix it to make it similar to the examples provided?</p>");
           introtext.appendTo(out);
         }
-      } else {
-        var introtext = $("<p>We have data we are unsure about. Can you spot what is wrong with it and fix it to make it similar to the examples provided?</p>");
-        introtext.appendTo(out);
-      }
-      
-      if (task.brokenValue) {
-        var value = $('<div class="value"><span>' + task.brokenValue.value + '</span></div>');
-        value.appendTo(out);
-      }
-
-      if (task.example) {
-        var examples = $('<ul class="example" />');
-        for (i = 0; i < task.example.length; i++) {
-          $("<li />").text(task.example[i]).appendTo(examples);
+        
+        if (task.brokenValue) {
+          var value = $('<div class="value"><span>' + task.brokenValue.value + '</span></div>');
+          value.appendTo(out);
         }
-        examples.appendTo(out);
+
+        if (task.example) {
+          var examples = $('<ul class="example" />');
+          for (i = 0; i < task.example.length; i++) {
+            $("<li />").text(task.example[i]).appendTo(examples);
+          }
+          examples.appendTo(out);
+        }
+        out.fadeIn(400);
+        $("ul.options").fadeIn(400);
+        out.appendTo(selector);
       }
-      out.fadeIn(400);
-      $("ul.options").fadeIn(400);
-      out.appendTo(selector);
     }
   });
 }
