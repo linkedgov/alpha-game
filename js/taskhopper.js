@@ -88,7 +88,8 @@ function loadJSONDoc(url, selector) {
   $.ajax({
     url: url,
     dataType: "jsonp",
-    success: function(task) {
+    success: function(tasks) {
+      var task = tasks[0];
       var out = $("<div class=\"task\" />");
       out.data("task-id", task.id);
       
