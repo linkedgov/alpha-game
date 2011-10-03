@@ -105,7 +105,7 @@ function loadJSONDoc(url, selector) {
         
         if (task.documentation) {
           if (task.documentation.typeReadable) {
-            var introtext = $("<p>We this the value below is a " +
+            var introtext = $("<p>We think the value below is a " +
                 task.documentation.typeReadable +
                 ", but we need confirmation.</p><p>Can you help? Could you make it to be the same format as the examples provided?</p>");
             introtext.appendTo(out);
