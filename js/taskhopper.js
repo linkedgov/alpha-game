@@ -26,6 +26,7 @@ LinkedGov.Taskhopper = function(){
       var submit = $('<input type="submit" value="Send" />');
       submit.appendTo(editForm);
 
+      /* Bind submission of edit form to API. */
       editForm.submit(function(submit) {
         var editedValue = $(submit.target).find("input[name=value]").val();
         hopper.submitTask(hopper.getSubmitUrl(), {action : "edit", value : editedValue, method: "POST"});
@@ -131,11 +132,13 @@ LinkedGov.Taskhopper = function(){
             introtext.appendTo(out);
           }
           
+          /* Add the broken value to the view. */
           if (task.brokenValue) {
             var value = $('<div class="value"><span>' + task.brokenValue.value + '</span></div>');
             value.appendTo(out);
           }
           
+          /* Add the example values to the view. */
           if (task.example) {
             var examples = $('<ul class="example" />');
             for (i = 0; i < task.example.length; i++) {
