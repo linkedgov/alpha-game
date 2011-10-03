@@ -97,7 +97,14 @@ LinkedGov.Taskhopper = function(){
   /* If submitting the task caused an error, gives user an error message and loads another task. */
   this.markError = function() {
     this.activeElement.replaceWith('<p id="task">There\'s been an error.</p>');
+    this.sendError();
     this.next();
+  }
+  
+  /* If there is an issue with processing data, send a message back to the server. */
+  this.sendError = function() {
+    var hopper = this;
+    $.ajax({ url: hopper.host + "/task/problem.js", dataType: "jsonp" });
   }
   
   /* Loads a task from the taskhopper and modifies the page to show the task. */

@@ -6,8 +6,8 @@
     <script type="text/javascript" charset="utf-8" src="/js/jquery-1.6.2.js" /></script>
     <script type="text/javascript" charset="utf-8" src="/js/taskhopper.js" /></script>
     <script type="text/javascript" charset="utf-8">
+      var hopper = LinkedGov.Taskhopper();
       $(document).ready(function() {
-        hopper = LinkedGov.Taskhopper();
         hopper.host = "http://localhost:8180";
         hopper.bind($("#task"));
       });
