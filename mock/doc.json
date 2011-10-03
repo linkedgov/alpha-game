@@ -10,7 +10,6 @@
     "taskType": "float-error",
     "brokenValue": {
         "value": "50, 37",
-        "type": "null",
         "expectedType": "float"
     },
     "example": {
