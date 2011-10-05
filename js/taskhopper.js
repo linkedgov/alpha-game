@@ -113,7 +113,8 @@ LinkedGov.Taskhopper = function(){
     $.ajax({
       url: url,
       dataType: "jsonp",
-      success: function(tasks) {
+      success: function(response) {
+        var tasks = response.rsp;
         if (tasks.length == 0) {
           /* If there are no tasks in the array, show the user a thank you message. */
           $("ul.options").hide();
