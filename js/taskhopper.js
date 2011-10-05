@@ -50,9 +50,7 @@ LinkedGov.Taskhopper = function(){
 
     /* Binds nullify button to submit to the API. */
     $("li#nullify a").click(function() {
-      var taskId = $("div.task").data("task-id");
-      var url = this.host + '/task/' + taskId + '.js';
-      hopper.submitTask(url, {action : "null", method: "POST"});
+      hopper.submitTask(hopper.getSubmitUrl(), {action : "null", method: "POST"});
     });
     
     /* Binds okay link to submit to the API. */
