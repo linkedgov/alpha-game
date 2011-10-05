@@ -1,16 +1,27 @@
+/* TaskHopper API object definition.
+ *
+ */
 var LinkedGov = {};
 LinkedGov.Taskhopper = function(){
+  /* Set host to the hostname of the API server. */
   this.host = "http://localhost:8180";
+
+  /* tasksDone is the number of tasks the user has done. It gets increased by the thanks method below. */
   this.tasksDone = 0;
+
+  /* After a task is loaded, this gets set to the ID of the current task. */
   this.currentTaskId = null;
   
+  /* Constructs the submit URL. */
   this.getSubmitUrl = function() {
     return this.host + "/task/" + this.currentTaskId + ".js";
   }
   
+  /* Binding method constructs the edit form and binds event handlers to the response buttons. */
   this.bind = function(selection) {
     var hopper = this;
     this.activeElement = selection;
+    /* Construct the 'tasks done' counter. */
     $("body").prepend($('<p id="count"><span>' + this.tasksDone + '</span> changes this session.</p>'));
     $("ul.options").hide();
     
@@ -63,12 +74,17 @@ LinkedGov.Taskhopper = function(){
     this.next();
   }
   
-  /* Loads next task from the API. */
+  /* Loads next task from the API.
+   * This gets a random task from the server, and the loadJSONDoc method then handles
+   * the response from the API to construct a new form. */
   this.next = function() {
     this.loadJSONDoc(this.host + "/task/random.js");
   }
   
-  /* Submits task back to the API. */
+  /* Submits task back to the API. If successful, the user is thanked and another
+   * task is loaded. If the submit back to the server fails, we warn the user there
+   * has been an error then load another task.
+   */
   this.submitTask = function(url, data) {
     var hopper = this;
     $.ajax({url: url,
@@ -76,6 +92,12 @@ LinkedGov.Taskhopper = function(){
       dataType: "jsonp",
       type: "GET",
       success: function(data) {
+        /* The data variable here contains details about the individual data
+         * instance (row, basically) in RDF/JSON format.  If you want to
+         * present the data to the user after completing the task, you can do
+         * that with this data. It also includes other issues with the
+         * instance.
+         */
         hopper.thanks();
       },
       error: function(data) {
@@ -84,49 +106,71 @@ LinkedGov.Taskhopper = function(){
     });
   }
   
-  /* If a task has been submitted without error, thanks user and loads another task. */
+  /* If a task has been submitted without error, thanks user and loads another
+   * task. */
   this.thanks = function() {
+    /* Construct HTML to thank the user. */
     var thanksElem = $('<p class="thanks">Thanks!</p>');
     this.activeElement.empty().append(thanksElem);
     thanksElem.delay(500).slideUp(800);
+    /* Update the number of tasks done. */
     this.tasksDone = this.tasksDone + 1;
     $("body p#count span").empty().append(this.tasksDone + "");
+    /* Load the next task. */
     this.next();
   }
   
-  /* If submitting the task caused an error, gives user an error message and loads another task. */
+  /* If submitting the task caused an error, gives user an error message and
+   * loads another task. */
   this.markError = function() {
     this.activeElement.replaceWith('<p id="task">There\'s been an error.</p>');
     this.sendError();
     this.next();
   }
   
-  /* If there is an issue with processing data, send a message back to the server. */
+  /* If there is an issue with processing data, send a message back to the
+   * server. */
   this.sendError = function() {
     var hopper = this;
     $.ajax({ url: hopper.host + "/task/problem.js", dataType: "jsonp" });
   }
   
-  /* Loads a task from the taskhopper and modifies the page to show the task. */
+  /* Loads a task from the taskhopper and constructs a view of the data for
+   * the user. */
   this.loadJSONDoc = function(url) {
     var hopper = this;
     $.ajax({
       url: url,
       dataType: "jsonp",
       success: function(response) {
+
+        /* If there is a task available, we will get back JSON from the server.
+         *
+         * The JSON contains the URLs of the issue, the instance ('graph'), the task type,
+         * the broken value, the dataset and (usually) some example data.
+         *
+         * Below, we have parse that data and construct a display for the user. Specifically, we need to use the 
+         */
+
         var tasks = response.rsp;
         if (tasks.length == 0) {
-          /* If there are no tasks in the array, show the user a thank you message. */
+          /* There are no tasks left in the taskhopper, so we can give them a nice
+           * thank you message! */
           $("ul.options").hide();
           var out = $("<p>It looks like we haven't got any tasks left! All is now right with the world. Pat yourself on the back.</p>");
           out.appendTo(hopper.activeElement);
         } else {
           /* If there are tasks in the array, bind the first task to the document. */
           var task = tasks[0];
+
+          /* We set the currentTaskId of the object to the ID returned by the
+           * API. This is important as we use it later for constructing the URL
+           * we submit back to. */
           hopper.currentTaskId = task.id;
+
           var out = $("<div class=\"task\" />");
           out.data("task-id", task.id);
-          
+
           /* If there is documentation provided with the task, use that. */
           if (task.documentation) {
             if (task.documentation.typeReadable) {
@@ -155,11 +199,17 @@ LinkedGov.Taskhopper = function(){
             examples.appendTo(out);
           }
           
-          /* Once we have constructed the new task display, attach it to the document. */
+          /* Once we have constructed the new task display, attach it to the
+           * document and display it to the user. */
           out.fadeIn(400);
           $("ul.options").fadeIn(400);
           out.appendTo(hopper.activeElement);
         }
+      },
+
+      /* If there is an error, handle it with an error message, then try loading a task again. */
+      error: function(data) {
+        hopper.markError();
       }
     });
   }
