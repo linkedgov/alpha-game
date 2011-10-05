@@ -144,10 +144,13 @@ LinkedGov.Taskhopper = function(){
 
         /* If there is a task available, we will get back JSON from the server.
          *
-         * The JSON contains the URLs of the issue, the instance ('graph'), the task type,
-         * the broken value, the dataset and (usually) some example data.
+         * The JSON contains the identifier (as a URL) of the type of the task,
+         * the value that needs fixing, and (usually) some examples of valid
+         * values, and other data that might be helpful about the record where
+         * the task comes from.
          *
-         * Below, we have parse that data and construct a display for the user. Specifically, we need to use the 
+         * Below, we have parse that data and construct a display for the user.
+         * Specifically, we need to use the 
          */
 
         var tasks = response.rsp;
