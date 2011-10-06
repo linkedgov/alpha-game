@@ -1,5 +1,12 @@
 /* TaskHopper API object definition.
- *
+ * 
+ * This defines a set of reusable functions which construct a basic game and show how the
+ * LinkedGov TaskHopper API works to retrieve tasks and fix problems in data.
+ * 
+ * To see how the game is invoked, check index.html
+ * 
+ * At certain points in the code, because of scoping, 'gameObjectRef' is set and used to refer
+ * to the game object overall.
  */
 var LinkedGov = {};
 LinkedGov.Taskhopper = function(){
@@ -22,7 +29,7 @@ LinkedGov.Taskhopper = function(){
   
   /* Binding method constructs the edit form and binds event handlers to the response buttons. */
   this.bind = function(selection) {
-    var hopper = this;
+    var gameObjectRef = this;
     this.activeElement = selection;
     /* Construct the 'tasks done' counter. */
     $("body").prepend($('<p id="count"><span>' + this.tasksDone + '</span> changes this session.</p>'));
@@ -33,7 +40,7 @@ LinkedGov.Taskhopper = function(){
       var value = $("div.value span").first().text();
       var taskId = $("div.task").data("task-id");
 
-      var editForm = $('<form method="POST" action="' + hopper.getSubmitUrl() + '" />');
+      var editForm = $('<form method="POST" action="' + gameObjectRef.getSubmitUrl() + '" />');
       $('<input name="action" value="edit" type="hidden" />').appendTo(editForm);
       $('<input name="value" type="text" />').val(value).appendTo(editForm);
       $('<br />').appendTo(editForm);
@@ -43,7 +50,7 @@ LinkedGov.Taskhopper = function(){
       /* Bind submission of edit form to API. */
       editForm.submit(function(submit) {
         var editedValue = $(submit.target).find("input[name=value]").val();
-        hopper.submitTask(hopper.getSubmitUrl(), {action : "edit", value : editedValue, method: "POST"});
+        gameObjectRef.submitTask(gameObjectRef.getSubmitUrl(), {action : "edit", value : editedValue, method: "POST"});
         return false;
       });
 
@@ -53,23 +60,23 @@ LinkedGov.Taskhopper = function(){
 
     /* Binds nullify button to submit to the API. */
     $("li#nullify a").click(function() {
-      hopper.submitTask(hopper.getSubmitUrl(), {action : "null", method: "POST"});
+      gameObjectRef.submitTask(gameObjectRef.getSubmitUrl(), {action : "null", method: "POST"});
     });
     
     /* Binds okay link to submit to the API. */
     $("li#okay a").click(function() {
-      hopper.submitTask(hopper.getSubmitUrl(), {action : "okay", method: "POST"});
+      gameObjectRef.submitTask(gameObjectRef.getSubmitUrl(), {action : "okay", method: "POST"});
     });
     
     /* Binds refer to expert link to submit to the API. */
     $("li#refer a").click(function() {
-      hopper.submitTask(hopper.getSubmitUrl(), {action : "refer", method: "POST"});
+      gameObjectRef.submitTask(gameObjectRef.getSubmitUrl(), {action : "refer", method: "POST"});
     });
 
     /* Binds skip link to load another task from the API. */
     $("li#skip a").click(function() {
       $("#task").empty();
-      hopper.next();
+      gameObjectRef.next();
     });
     
     this.next();
@@ -92,7 +99,7 @@ LinkedGov.Taskhopper = function(){
    * has been an error then load another task.
    */
   this.submitTask = function(url) {
-    var hopper = this;
+    var gameObjectRef = this;
     $.ajax({url: url,
       dataType: "jsonp",
       type: "GET",
@@ -103,10 +110,10 @@ LinkedGov.Taskhopper = function(){
          * that with this data. It also includes other issues with the
          * instance.
          */
-        hopper.thanks();
+        gameObjectRef.thanks();
       },
       error: function(data) {
-        hopper.markError();
+        gameObjectRef.markError();
       }
     });
   }
@@ -136,14 +143,14 @@ LinkedGov.Taskhopper = function(){
   /* If there is an issue with processing data, send a message back to the
    * server. */
   this.sendError = function() {
-    var hopper = this;
-    $.ajax({ url: hopper.host + "/task/problem.js", dataType: "jsonp" });
+    var gameObjectRef = this;
+    $.ajax({ url: gameObjectRef.host + "/task/problem.js", dataType: "jsonp" });
   }
   
   /* Loads a task from the taskhopper and constructs a view of the data for
    * the user. */
   this.loadJSONDoc = function(url, data) {
-    var hopper = this;
+    var gameObjectRef = this;
     $.ajax({
       url: url,
       data: data,
@@ -167,7 +174,7 @@ LinkedGov.Taskhopper = function(){
            * thank you message! */
           $("ul.options").hide();
           var out = $("<p>It looks like we haven't got any tasks left! All is now right with the world. Pat yourself on the back.</p>");
-          out.appendTo(hopper.activeElement);
+          out.appendTo(gameObjectRef.activeElement);
         } else {
           /* If there are tasks in the array, bind the first task to the document. */
           var task = tasks[0];
@@ -175,7 +182,7 @@ LinkedGov.Taskhopper = function(){
           /* We set the currentTaskId of the object to the ID returned by the
            * API. This is important as we use it later for constructing the URL
            * we submit back to. */
-          hopper.currentTaskId = task.id;
+          gameObjectRef.currentTaskId = task.id;
 
           var out = $("<div class=\"task\" />");
           out.data("task-id", task.id);
@@ -212,13 +219,13 @@ LinkedGov.Taskhopper = function(){
            * document and display it to the user. */
           out.fadeIn(400);
           $("ul.options").fadeIn(400);
-          out.appendTo(hopper.activeElement);
+          out.appendTo(gameObjectRef.activeElement);
         }
       },
 
       /* If there is an error, handle it with an error message, then try loading a task again. */
       error: function(data) {
-        hopper.markError();
+        gameObjectRef.markError();
       }
     });
   }
