@@ -136,8 +136,16 @@ LinkedGov.Taskhopper = function(){
   
   /* If submitting the task caused an error, gives user an error message and
    * loads another task. */
-  this.markError = function() {
-    this.activeElement.replaceWith('<p id="task">There\'s been an error.</p>');
+  this.markError = function(msg) {
+    /* Construct HTML to thank the user. */
+    if (msg == null || msg == "") {
+      var thanksElem = $('<p class="problem">There\'s been a problem.</p>');
+    } else {
+      var thanksElem = $('<p class="problem">' + msg + '</p>');
+    }
+    this.activeElement.find(".game").empty().append(thanksElem);
+    thanksElem.delay(3000).slideUp(800);
+    
     this.sendError();
     this.next();
   }
@@ -227,7 +235,7 @@ LinkedGov.Taskhopper = function(){
 
       /* If there is an error, handle it with an error message, then try loading a task again. */
       error: function(data) {
-        gameObjectRef.markError();
+        gameObjectRef.markError("");
       }
     });
   }
