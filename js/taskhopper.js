@@ -11,6 +11,9 @@ LinkedGov.Taskhopper = function(){
 
   /* After a task is loaded, this gets set to the ID of the current task. */
   this.currentTaskId = null;
+
+  /* Sets the task type you want to do. If null, it requests tasks of all type. */
+  this.taskType = null;
   
   /* Constructs the submit URL. */
   this.getSubmitUrl = function() {
@@ -76,17 +79,21 @@ LinkedGov.Taskhopper = function(){
    * This gets a random task from the server, and the loadJSONDoc method then handles
    * the response from the API to construct a new form. */
   this.next = function() {
-    this.loadJSONDoc(this.host + "/task/random.js");
+    if (this.taskType == null) {
+      this.loadJSONDoc(this.host + "/task/random.js");
+    } else {
+      /* If a task type has been set, we load that type of task. */
+      this.loadJSONDoc(this.host + "/task/random.js?type=" + encodeURIComponent(this.taskType));
+    }
   }
   
   /* Submits task back to the API. If successful, the user is thanked and another
    * task is loaded. If the submit back to the server fails, we warn the user there
    * has been an error then load another task.
    */
-  this.submitTask = function(url, data) {
+  this.submitTask = function(url) {
     var hopper = this;
     $.ajax({url: url,
-      data: data,
       dataType: "jsonp",
       type: "GET",
       success: function(data) {
@@ -135,10 +142,11 @@ LinkedGov.Taskhopper = function(){
   
   /* Loads a task from the taskhopper and constructs a view of the data for
    * the user. */
-  this.loadJSONDoc = function(url) {
+  this.loadJSONDoc = function(url, data) {
     var hopper = this;
     $.ajax({
       url: url,
+      data: data,
       dataType: "jsonp",
       success: function(response) {
 

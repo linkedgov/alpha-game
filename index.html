@@ -9,6 +9,7 @@
       var hopper = LinkedGov.Taskhopper();
       $(document).ready(function() {
         hopper.host = "http://localhost:8180";
+        hopper.taskType = "http://linkedgov.org/schema/task-types/float-error";
         hopper.bind($("#task"));
       });
     </script>
