@@ -29,16 +29,16 @@ LinkedGov.Taskhopper = function(){
   
   /* Binding method constructs the edit form and binds event handlers to the response buttons. */
   this.bind = function(selection) {
-    var gameObjectRef = this;
     this.activeElement = selection;
+    var gameObjectRef = this;
     /* Construct the 'tasks done' counter. */
-    $("body").prepend($('<p id="count"><span>' + this.tasksDone + '</span> changes this session.</p>'));
-    $("ul.options").hide();
+    selection.prepend($('<p id="count"><span>' + this.tasksDone + '</span> changes this session.</p>'));
+    selection.find("ul.options").hide();
     
     /* Binds edit button: creates form, handles submit and sends submits data to API. */
-    $("li#edit a").click(function() {
-      var value = $("div.value span").first().text();
-      var taskId = $("div.task").data("task-id");
+    gameObjectRef.activeElement.find("li#edit a").click(function() {
+      var value = gameObjectRef.activeElement.find("div.value span").first().text();
+      var taskId = gameObjectRef.activeElement.find("div.game").data("task-id");
 
       var editForm = $('<form method="POST" action="' + gameObjectRef.getSubmitUrl() + '" />');
       $('<input name="action" value="edit" type="hidden" />').appendTo(editForm);
@@ -54,28 +54,28 @@ LinkedGov.Taskhopper = function(){
         return false;
       });
 
-      $("div.value span").hide();
-      $("div.value").append(editForm);
+      gameObjectRef.activeElement.find("div.value span").hide();
+      gameObjectRef.activeElement.find("div.value").append(editForm);
     });
 
     /* Binds nullify button to submit to the API. */
-    $("li#nullify a").click(function() {
+    gameObjectRef.activeElement.find("li#nullify a").click(function() {
       gameObjectRef.submitTask(gameObjectRef.getSubmitUrl(), {action : "null", method: "POST"});
     });
     
     /* Binds okay link to submit to the API. */
-    $("li#okay a").click(function() {
+    gameObjectRef.activeElement.find("li#okay a").click(function() {
       gameObjectRef.submitTask(gameObjectRef.getSubmitUrl(), {action : "okay", method: "POST"});
     });
     
     /* Binds refer to expert link to submit to the API. */
-    $("li#refer a").click(function() {
+    gameObjectRef.activeElement.find("li#refer a").click(function() {
       gameObjectRef.submitTask(gameObjectRef.getSubmitUrl(), {action : "refer", method: "POST"});
     });
 
     /* Binds skip link to load another task from the API. */
-    $("li#skip a").click(function() {
-      $("#task").empty();
+    gameObjectRef.activeElement.find("li#skip a").click(function() {
+      $(gameObjectRef.activeElement).find(".game").empty();
       gameObjectRef.next();
     });
     
@@ -98,12 +98,14 @@ LinkedGov.Taskhopper = function(){
    * task is loaded. If the submit back to the server fails, we warn the user there
    * has been an error then load another task.
    */
-  this.submitTask = function(url) {
+  this.submitTask = function(url, data) {
     var gameObjectRef = this;
     $.ajax({url: url,
       dataType: "jsonp",
+      data: data,
       type: "GET",
       success: function(data) {
+        console.log(data);
         /* The data variable here contains details about the individual data
          * instance (row, basically) in RDF/JSON format.  If you want to
          * present the data to the user after completing the task, you can do
@@ -123,11 +125,11 @@ LinkedGov.Taskhopper = function(){
   this.thanks = function() {
     /* Construct HTML to thank the user. */
     var thanksElem = $('<p class="thanks">Thanks!</p>');
-    this.activeElement.empty().append(thanksElem);
+    this.activeElement.find(".game").empty().append(thanksElem);
     thanksElem.delay(500).slideUp(800);
     /* Update the number of tasks done. */
     this.tasksDone = this.tasksDone + 1;
-    $("body p#count span").empty().append(this.tasksDone + "");
+    this.activeElement.find("p#count span").empty().append(this.tasksDone + "");
     /* Load the next task. */
     this.next();
   }
@@ -172,7 +174,7 @@ LinkedGov.Taskhopper = function(){
         if (tasks.length == 0) {
           /* There are no tasks left in the taskhopper, so we can give them a nice
            * thank you message! */
-          $("ul.options").hide();
+          gameObjectRef.activeElement.find("ul.options").hide();
           var out = $("<p>It looks like we haven't got any tasks left! All is now right with the world. Pat yourself on the back.</p>");
           out.appendTo(gameObjectRef.activeElement);
         } else {
@@ -184,7 +186,7 @@ LinkedGov.Taskhopper = function(){
            * we submit back to. */
           gameObjectRef.currentTaskId = task.id;
 
-          var out = $("<div class=\"task\" />");
+          var out = gameObjectRef.activeElement.find(".game").first();
           out.data("task-id", task.id);
 
           /* If there is documentation provided with the task, use that. */
@@ -218,8 +220,8 @@ LinkedGov.Taskhopper = function(){
           /* Once we have constructed the new task display, attach it to the
            * document and display it to the user. */
           out.fadeIn(400);
-          $("ul.options").fadeIn(400);
-          out.appendTo(gameObjectRef.activeElement);
+          gameObjectRef.activeElement.find("ul.options").fadeIn(400);
+          out.insertBefore(gameObjectRef.activeElement.find("ul.options"));
         }
       },
 
