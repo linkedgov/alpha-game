@@ -22,6 +22,10 @@ LinkedGov.Taskhopper = function(){
   /* Sets the task type you want to do. If null, it requests tasks of all type. */
   this.taskType = null;
   
+  /* Number of times to try loading a task if broken. */
+  this.limitAttempts = 5;
+  this.attempts = 0;
+  
   /* Constructs the submit URL. */
   this.getSubmitUrl = function() {
     return this.host + "/task/" + this.currentTaskId + ".js";
@@ -147,7 +151,14 @@ LinkedGov.Taskhopper = function(){
     thanksElem.delay(3000).slideUp(800);
     
     this.sendError();
-    this.next();
+    /* Increment the number of errors we've had. */
+    this.attempts = this.attempts + 1;
+    /* Try again, unless we've had too many errors. */
+    if (this.attempts < this.limitAttempts) {
+      this.next();
+    } else {
+      this.activeElement.replaceWith('<p class="fatal">Lost connection to server: please reload the page.</p>');
+    }
   }
   
   /* If there is an issue with processing data, send a message back to the
@@ -188,6 +199,15 @@ LinkedGov.Taskhopper = function(){
         } else {
           /* If there are tasks in the array, bind the first task to the document. */
           var task = tasks[0];
+          
+          /* Check to see if we have all the minimal data needed to carry out a task.
+           * If not, send the user an error and try another task. */
+          if (task == null || !(task instanceof Object) || task.taskType == null
+              || task.taskType == "" || task.brokenValue == null
+              || task.brokenValue.value == null || task.brokenValue.value == ""
+              || task.id == null) {
+            gameObjectRef.markError("Sorry, there has been a problem loading the task.");
+          }
 
           /* We set the currentTaskId of the object to the ID returned by the
            * API. This is important as we use it later for constructing the URL
